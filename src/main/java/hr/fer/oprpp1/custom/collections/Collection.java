@@ -51,12 +51,17 @@ public interface Collection {
 	public Object[] toArray();
 	
 	/**
-	 * Method calls processor.process(.) for each element of this collection. The order in which elements
+	 * Method calls processor.process() for each element of this collection. The order in which elements
 	 * will be sent is undefined in this class.
 	 * @param processor instance of a class {@code Processor} that processes all elements of the collection.
 	 */
 	
-	void forEach(Processor processor) ;
+	default void forEach(Processor processor) {
+        ElementsGetter getter = this.createElementsGetter();
+        while(getter.hasNextElement()){
+            processor.process(getter.getNextElement());
+        }
+    }
 	
 	/**
 	 * 
@@ -95,4 +100,13 @@ public interface Collection {
      */
 
     ElementsGetter createElementsGetter();
+
+    default void addAllSatisfying(Collection col, Tester tester){
+        ElementsGetter getter = col.createElementsGetter();
+        while(getter.hasNextElement()){
+            Object next = getter.getNextElement();
+            if(tester.test(next))
+                this.add(next);
+        }
+    }
 }

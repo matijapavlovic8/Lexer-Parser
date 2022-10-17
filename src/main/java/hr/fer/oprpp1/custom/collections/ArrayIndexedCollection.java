@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
  *
  */
 
-public class ArrayIndexedCollection implements Collection {
+public class ArrayIndexedCollection implements List {
 	
 	
 	/**
@@ -133,14 +133,7 @@ public class ArrayIndexedCollection implements Collection {
 		}
 		return false;
 	}
-	
-	@Override
-	
-	public void forEach(Processor processor) {
-		for(int i = 0; i < this.size(); i++) {
-			processor.process(this.elements[i]);
-		}
-	}
+
 	
 	/**
 	 * Removes the element from the collection found on the given index.

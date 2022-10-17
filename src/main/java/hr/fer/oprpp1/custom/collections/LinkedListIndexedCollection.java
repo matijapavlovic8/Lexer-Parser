@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
  */
 
 
-public class LinkedListIndexedCollection implements Collection {
+public class LinkedListIndexedCollection implements List {
 
 private static class ListNode {
 		
@@ -276,14 +276,6 @@ private static class ListNode {
 		return arr;
 	}
 
-    @Override
-    public void forEach(Processor processor) {
-        ListNode curr = this.first;
-        for(int i = 0; i < this.size(); i++){
-            processor.process(curr.value);
-            curr = curr.next;
-        }
-    }
 
     private static class LinkedListElementsGetter implements ElementsGetter {
         private ListNode currentNode;
