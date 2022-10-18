@@ -1,5 +1,11 @@
 package hr.fer.oprpp1.hw02.prob1;
 
+/**
+ * Implementation of a lexer.
+ *
+ * @author MatijaPav
+ */
+
 public class Lexer {
     /**
      * Input text.

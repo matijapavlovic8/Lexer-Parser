@@ -29,9 +29,7 @@ public class Token {
      * @return Returns value of the token.
      */
 
-    public Object getValue() {
-        return value;
-    }
+    public Object getValue() { return value; }
 
     /**
      * Gets the type of current token.
