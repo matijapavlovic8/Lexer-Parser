@@ -30,4 +30,12 @@ public class TextNode extends Node{
     public String getText(){
         return this.text;
     }
+
+    @Override
+
+    public String toString(){
+        text.replace("\\", "\\\\");
+        text.replace("{", "\\{");
+        return text;
+    }
 }

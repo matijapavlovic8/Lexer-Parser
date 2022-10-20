@@ -5,5 +5,5 @@ package hr.fer.oprpp1.custom.scripting.lexer;
  */
 
 public enum SmartScriptTokenType {
-    EOF, TAG_START, TAG_END, OPERATOR, TEXT, FUNCTION, INTEGER, DOUBLE, TAG_TEXT
+    EOF, TAG, OPERATOR, TEXT, FUNCTION, INTEGER, DOUBLE, TAG_TEXT, VARIABLE
 }

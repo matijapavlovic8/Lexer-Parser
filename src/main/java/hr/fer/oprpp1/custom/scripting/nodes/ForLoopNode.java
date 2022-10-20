@@ -9,7 +9,7 @@ import hr.fer.oprpp1.custom.scripting.elems.ElementVariable;
  * @author MatijaPav
  */
 
-public class ForLoopNode {
+public class ForLoopNode extends Node {
     /**
      * Variable of ForLoopNode.
      */
@@ -75,5 +75,24 @@ public class ForLoopNode {
 
     public Element getStepExpression() {
         return stepExpression;
+    }
+
+    @Override
+
+    public String toString(){
+        String res = "{$ FOR ";
+
+        res += getVariable().asText() + " " + getStartExpression().asText() + " " + getEndExpression();
+        if(stepExpression != null)
+            res += " " + getStepExpression().asText();
+        res += " $}";
+
+        for(int i = 0; i < numberOfChildren(); i++)
+            res += getChild(i).toString();
+
+        res += "{$END$}";
+
+        return res;
+
     }
 }
