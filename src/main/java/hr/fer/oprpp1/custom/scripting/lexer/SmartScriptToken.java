@@ -42,6 +42,6 @@ public class SmartScriptToken {
      */
 
     public SmartScriptTokenType getType() {
-        return type;
+        return this.type;
     }
 }

@@ -19,6 +19,7 @@ import hr.fer.oprpp1.custom.scripting.nodes.EchoNode;
 import hr.fer.oprpp1.custom.scripting.nodes.ForLoopNode;
 import hr.fer.oprpp1.custom.scripting.nodes.Node;
 import hr.fer.oprpp1.custom.scripting.nodes.TextNode;
+import hr.fer.oprpp1.hw02.prob1.Token;
 
 /**
  * Implementation of a parser.
@@ -84,17 +85,17 @@ public class SmartScriptParser {
         DocumentNode root = new DocumentNode();
         stack.push(root);
 
-        while(token.getType() != SmartScriptTokenType.EOF){
-            if(token.getType() == SmartScriptTokenType.TAG && token.getValue() == "{$")
+        while(token.getType() != SmartScriptTokenType.EOF) {
+            if (token.getType() == SmartScriptTokenType.TAG && token.getValue().toString().equals("{$")) {
                 lexer.setState(SmartScriptLexerState.TAG);
 
-            if(token.getType() == SmartScriptTokenType.TEXT)
+            } else if (token.getType() == SmartScriptTokenType.TEXT){
                 parseText();
 
-            if (token.getType() == SmartScriptTokenType.VARIABLE)
+            } else if (token.getType() == SmartScriptTokenType.VARIABLE) {
                 parseTag();
 
-            else throw new SmartScriptParserException("Can't parse this token.");
+            } else throw new SmartScriptParserException("Can't parse this token! " + token.getType());
 
             token = lexer.nextToken();
 
@@ -102,7 +103,7 @@ public class SmartScriptParser {
 
         try{
             return (DocumentNode) stack.pop();
-        } catch (EmptyStackException e) {
+        } catch (EmptyStackException | ClassCastException e) {
             throw new SmartScriptParserException(e.getMessage());
         }
     }
@@ -112,27 +113,36 @@ public class SmartScriptParser {
      */
 
     private void parseTag(){
-        if(token.getValue() == "=") {
+
+        if(token.getValue().toString().equals("=")) {
             token = lexer.nextToken();
             currentNode().addChildNode(new EchoNode(parseEq()));
         }
-        if(token.getValue() == "FOR"){
-            token = lexer.nextToken();
+        else if(token.getValue().toString().equalsIgnoreCase("FOR")){
             Element[] arr = parseFor();
-            if(arr.length == 3)
-                currentNode().addChildNode(new ForLoopNode((ElementVariable) arr[0], arr[1], arr[2]));
-            if(arr.length == 4)
-                currentNode().addChildNode(new ForLoopNode((ElementVariable) arr[0], arr[1], arr[2], arr[3]));
+
+            if(arr.length == 3) {
+                ForLoopNode node = new ForLoopNode((ElementVariable) arr[0], arr[1], arr[2]);
+                currentNode().addChildNode(node);
+                stack.push(node);
+            }
+            else if(arr.length == 4) {
+                ForLoopNode node = new ForLoopNode((ElementVariable) arr[0], arr[1], arr[2], arr[3]);
+                currentNode().addChildNode(node);
+                stack.push(node);
+            }
             else
                 throw new SmartScriptParserException("ForLoopNode takes 3 or 4 args.");
+
+
         }
 
-        if(token.getValue() == "END") {
+        else if(token.getValue().toString().equalsIgnoreCase("END")) {
             token = lexer.nextToken();
             parseEnd();
 
         } else
-            throw new SmartScriptParserException("Can't parse this token.");
+            throw new SmartScriptParserException("Can't parse this token. " + lexer.getState());
 
         lexer.setState(SmartScriptLexerState.TEXT);
 
@@ -159,7 +169,7 @@ public class SmartScriptParser {
             token = lexer.nextToken();
         }
 
-        if(token.getValue() == "{$") throw new SmartScriptParserException("Can't open a tag inside a tag");
+        if(token.getValue().toString().equals("{$")) throw new SmartScriptParserException("Can't open a tag inside a tag");
 
         return createElementArray(elements);
     }
@@ -169,7 +179,7 @@ public class SmartScriptParser {
         token = lexer.nextToken();
 
         if(token.getType() != SmartScriptTokenType.VARIABLE)
-            throw new SmartScriptParserException("For loop requires a variable!");
+            throw new SmartScriptParserException("For loop requires a variable!" + token.getType() + token.getValue());
 
         elements.add(new ElementVariable((String)token.getValue()));//add ElementVariable as first argument
 
@@ -179,14 +189,13 @@ public class SmartScriptParser {
             elements.add(fillElements());
             token = lexer.nextToken();
         }
-        if(token.getValue() == "{$") throw new SmartScriptParserException("Can't open a tag inside a tag");
+        if(token.getValue().toString().equals("{$")) throw new SmartScriptParserException("Can't open a tag inside a tag");
 
         return createElementArray(elements);
     }
 
     private void parseEnd(){
-        token = lexer.nextToken();
-        if(token.getType() != SmartScriptTokenType.TAG && token.getValue() != "$}")
+        if(token.getType() != SmartScriptTokenType.TAG && !token.getValue().toString().equals("$}"))
             throw new SmartScriptParserException("Tags must be closed with end tags.");
 
         stack.pop();
@@ -210,36 +219,31 @@ public class SmartScriptParser {
             throw new SmartScriptParserException("Opened tags must be closed.");
         if(token.getType() == SmartScriptTokenType.VARIABLE){
             String value = (String)token.getValue();
-            ElementVariable var = new ElementVariable(value);
-            return var;
+            return new ElementVariable(value);
         }
         if(token.getType() == SmartScriptTokenType.DOUBLE){
             Double num = (Double) token.getValue();
-            ElementConstantDouble ecd = new ElementConstantDouble(num);
-            return ecd;
+            return new ElementConstantDouble(num);
         }
         if(token.getType() == SmartScriptTokenType.OPERATOR){
             String operator = (String)token.getValue();
-            ElementOperator eo = new ElementOperator(operator);
-            return eo;
+            return new ElementOperator(operator);
         }
         if(token.getType() == SmartScriptTokenType.INTEGER){
-            Integer num = (Integer) token.getValue();
-            ElementConstantInteger eci = new ElementConstantInteger(num);
-            return eci;
+            int num = (int) token.getValue();
+            return new ElementConstantInteger(num);
         }
         if(token.getType() == SmartScriptTokenType.FUNCTION){
             String fun = (String) token.getValue();
-            ElementFunction ef = new ElementFunction(fun);
-            return ef;
+            return new ElementFunction(fun);
         }
         if(token.getType() == SmartScriptTokenType.TAG_TEXT){
             String str = (String) token.getValue();
-            ElementString es = new ElementString(str);
-            return es;
-        } else {
-            throw new SmartScriptParserException("Can't parse this token");
+            return new ElementString(str);
         }
+
+        throw new SmartScriptParserException("Can't parse this token!" + token.getValue());
+
     }
 
     public Element[] createElementArray(ArrayIndexedCollection col){

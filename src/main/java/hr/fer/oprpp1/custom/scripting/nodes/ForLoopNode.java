@@ -82,7 +82,7 @@ public class ForLoopNode extends Node {
     public String toString(){
         String res = "{$ FOR ";
 
-        res += getVariable().asText() + " " + getStartExpression().asText() + " " + getEndExpression();
+        res += getVariable().asText() + " " + getStartExpression().asText() + " " + getEndExpression().asText();
         if(stepExpression != null)
             res += " " + getStepExpression().asText();
         res += " $}";

@@ -11,7 +11,6 @@ public class Prob1Test {
 	@Test
 	public void testNotNull() {
 		Lexer lexer = new Lexer("");
-		
 		assertNotNull(lexer.nextToken(), "Token was expected but null was returned.");
 	}
 

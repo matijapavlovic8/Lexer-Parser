@@ -16,4 +16,11 @@ public class DocumentNode extends Node{
         }
         return doc;
     }
+
+    @Override
+    public boolean equals(Object o){
+        if(!(o instanceof DocumentNode))
+            return false;
+        return(this.toString().equals(o.toString()));
+    }
 }

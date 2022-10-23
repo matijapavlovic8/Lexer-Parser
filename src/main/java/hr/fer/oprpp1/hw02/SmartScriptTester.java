@@ -20,5 +20,14 @@ public class SmartScriptTester {
         DocumentNode document2 = parser2.getDocumentNode();
         // now document and document2 should be structurally identical trees
         boolean same = document.equals(document2); // ==> "same" must be true
+
+        System.out.println(same);
+
+        System.out.println(originalDocumentBody);
+
+        System.out.println(document2.toString());
+        System.out.println(document.numberOfChildren());
+        System.out.println(document2.numberOfChildren());
+
     }
 }

@@ -164,10 +164,12 @@ public class SmartScriptLexer {
      * @return True if tag is reached, false otherwise.
      */
     private boolean checkTagStart(){
-        String tag = "{$";
         if(currentIndex + 1 >= this.data.length) return false;
+        String tag = "{$";
         String checked = "" + this.data[currentIndex] + this.data[currentIndex + 1];
         if(tag.equals(checked)){
+            if(this.currentIndex > 0 && this.data[currentIndex - 1] == '\\') return false;
+            setState(SmartScriptLexerState.TAG);
             currentIndex += 2;
             return true;
         }
@@ -183,6 +185,7 @@ public class SmartScriptLexer {
         String checked = "" + this.data[currentIndex] + this.data[currentIndex + 1];
         if(tag.equals(checked)){
             currentIndex += 2;
+            setState(SmartScriptLexerState.TEXT);
             return true;
         }
         return false;
@@ -243,15 +246,18 @@ public class SmartScriptLexer {
     private SmartScriptToken processText(){
         String value = "";
         while(this.currentIndex < this.data.length && !checkTagStart()){
-            if(this.data[currentIndex] == '{') throw new LexerException("{ must be escaped.");
-            if(this.data[currentIndex] == '\\') {
-                if (this.data[currentIndex + 1] != '\\' || this.data[currentIndex + 1] != '{')
-                    throw new LexerException("Wrong use of escaping mechanism.");
+            if(this.data[currentIndex] == '{') throw new LexerException("{ must be escaped." + this.data[currentIndex + 1]);
+            if(this.data[currentIndex] == '\\'){
+                if(this.currentIndex + 1 >= this.data.length || (this.data[currentIndex + 1] != '\\' && this.data[currentIndex + 1] != '{'))
+                    throw new LexerException("Wrong use of escaping mechanism");
+                value += "\\";
+                value += this.data[++currentIndex];
                 currentIndex++;
-            }
-            value += this.data[currentIndex++];
+            } else
+                value += this.data[currentIndex++];
         }
         setToken(SmartScriptTokenType.TEXT, value);
+
         return this.token;
     }
 
@@ -278,12 +284,13 @@ public class SmartScriptLexer {
             skipWhitespace();
         if(this.data[currentIndex] == '=') return processEqual();
         if(checkLetter()) return processVariable();
-        if(checkOperator()) return processOperator();
         if(checkDigit()) return processNumber();
+        if(this.data[currentIndex] == '@') return processFunction();
         if(this.data[currentIndex] == '-' && this.currentIndex < this.data.length && Character.isDigit(this.data[currentIndex + 1]))
             return processNegative();
+        if(checkOperator()) return processOperator();
         if(this.data[currentIndex] == '"') return processStringInTag();
-        throw new LexerException("Can't create token.");
+        throw new LexerException("Can't create token." + this.data[currentIndex]);
 
 
     }
@@ -312,6 +319,26 @@ public class SmartScriptLexer {
 
         setToken(SmartScriptTokenType.VARIABLE, variable);
         return this.token;
+    }
+
+    /**
+     * Processes functions.
+     * @return {@code SmartScriptToken}
+     */
+    private SmartScriptToken processFunction(){
+        String name = "@";
+        currentIndex++;
+        if(!checkLetter()) throw new LexerException("Invalid function name!");
+        name += this.data[currentIndex];
+        currentIndex++;
+        while(checkLetter() || checkDigit() || this.data[currentIndex] == '_'){
+            name += this.data[currentIndex++];
+        }
+
+        setToken(SmartScriptTokenType.FUNCTION, name);
+        return this.token;
+
+
     }
 
     /**
@@ -387,29 +414,29 @@ public class SmartScriptLexer {
             if(this.currentIndex + 1 < this.data.length && this.data[currentIndex] == '\\'){
                 currentIndex++;
                 if(this.data[currentIndex] == 'r') {
-                    value += '\r';
+                    value += "\r";
                     currentIndex++;
                 }
-                if(this.data[currentIndex] == 'n'){
-                    value += '\n';
+                else if(this.data[currentIndex] == 'n'){
+                    value += "\n";
                     currentIndex++;
                 }
-                if(this.data[currentIndex] == 't'){
-                    value += '\t';
+                else if(this.data[currentIndex] == 't'){
+                    value += "\t";
                     currentIndex++;
                 }
-                if(this.data[currentIndex] == '"'){
+                else if(this.data[currentIndex] == '"'){
                     value += '"';
                     currentIndex++;
                 }
-                if(this.data[currentIndex] == '\\'){
-                    value += '\\';
+                else if(this.data[currentIndex] == '\\'){
+                    value += "\\";
                     currentIndex++;
                 } else {
                     throw new LexerException("Invalid use of escaping mechanism.");
                 }
-            }
-            value += this.data[currentIndex++];
+            } else
+                value += this.data[currentIndex++];
         }
         if(this.data[currentIndex] == '"')
             currentIndex++;
